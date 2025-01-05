@@ -12,8 +12,8 @@ Make sure you have [Conda](https://docs.conda.io/projects/conda/en/latest/user-g
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/your-repo.git
-   cd your-repo
+   git clone https://github.com/GioMontefoschi/ras2tin.git
+   cd ras2tin
    ```
 
 2. Create the environment using the provided environment.yml file:

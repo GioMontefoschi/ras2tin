@@ -1,4 +1,4 @@
-name: gsp_24
+name: ras2tin
 channels:
   - conda-forge
   - defaults

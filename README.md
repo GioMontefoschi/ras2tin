@@ -1,5 +1,6 @@
 # ras2tin
-A library created by Giovanni Montefoschi to convert rasters to triangulated irregular networks
+A library created by Giovanni Montefoschi to convert rasters to triangulated irregular networks.
+This is a University project!
 
 ## Setting Up the Environment
 

@@ -9,7 +9,7 @@ To recreate the conda environment used for this project, follow the steps below:
 ### Prerequisites
 Make sure you have [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) installed on your system.
 
-### Installation Steps
+### How to install for developement
 
 1. Clone the repository:
    ```bash
@@ -17,13 +17,12 @@ Make sure you have [Conda](https://docs.conda.io/projects/conda/en/latest/user-g
    cd ras2tin
    ```
 
-2. Create the environment using the provided environment.yml file:
+2. Install the necessary requirements 
     ```bash
-    conda env create -f environment.yml
+    pip install requirements.txt 
     ```
 
-3. Activate the environment:
+3. Install the package using pip
     ```bash
-    conda activate ras2tin
+    pip install -e . 
     ```
-

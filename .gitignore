@@ -4,3 +4,6 @@ venv/
 demo/
 build/
 ras2tin.egg-info/
+venv/
+*.egg-info
+dist/

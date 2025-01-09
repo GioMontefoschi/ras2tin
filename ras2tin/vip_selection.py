@@ -3,7 +3,7 @@ VIP Selection algorithm. Implementing "Systematic selection of very important po
 """
 import numpy as np
 import rasterio
-import utils
+from .utils import pad_array, conv2d
 
 laplacian = np.array([
     [-1, -1, -1],
@@ -12,8 +12,8 @@ laplacian = np.array([
 ])
 
 def vip_selection(elevation_data, metadata, ratio):
-    data = utils.pad_array(elevation_data) #Add padding
-    significance = utils.conv2d(data, laplacian)
+    data = pad_array(elevation_data) #Add padding
+    significance = conv2d(data, laplacian)
     data = data[1:-1, 1:-1]
 
     tot_points = data.size

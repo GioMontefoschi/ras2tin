@@ -5,7 +5,7 @@ from .utils import pad_array, conv2d
 from .vip_selection import vip_selection
 
 # Import the TIN class
-from .ras2tin import TIN
+from .tin import TIN
 
 # Define what will be imported when `from ras2tin import *` is used
 __all__ = [

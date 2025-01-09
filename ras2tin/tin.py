@@ -5,7 +5,7 @@ by Giovanni Montefoschi
 import numpy as np
 import rasterio
 from scipy.spatial import Delaunay
-import vip_selection
+from .vip_selection import vip_selection
 import plotly.graph_objects as go
 
 class TIN:
@@ -47,7 +47,7 @@ class TIN:
         """
         if self.elevation_data is None:
             raise ValueError("Elevation data not loaded.")
-        self.points = vip_selection.vip_selection(elevation_data=self.elevation_data, metadata=self.metadata, ratio=ratio)
+        self.points = vip_selection(elevation_data=self.elevation_data, metadata=self.metadata, ratio=ratio)
 
     def generate_tin(self):
         """

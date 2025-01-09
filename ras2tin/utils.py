@@ -63,3 +63,48 @@ def conv2d(array, kernel):
     output = np.tensordot(patches, kernel, axes=([2, 3], [0, 1]))
 
     return output
+
+def slope(points, triangles):
+    """
+    A function that takes the tin and returns slope of every triangle
+    """
+    # Compute the vectors for each triangle
+    v1 = points[triangles[:, 1]] - points[triangles[:, 0]]  # Vector from p0 to p1
+    v2 = points[triangles[:, 2]] - points[triangles[:, 0]]  # Vector from p0 to p2
+    # Compute normal vector for each plane
+    normal = np.cross(v1, v2)
+
+    # Define vertical direction
+    vertical = np.array([0, 0, 1])
+
+    # Make dot product
+    dot_prod = np.dot(normal, vertical)
+
+    # Compute the magnitude of the normal vector
+    normal_mod = np.linalg.norm(normal, axis=1)
+
+    # Compute the slope
+    slope = np.arccos(dot_prod / normal_mod)
+
+    return np.degrees(slope)
+
+def aspect(points, triangles):
+    """
+    A function that takes the tin and returns aspect of every triangle
+    """
+    # Compute the vectors for each triangle
+    v1 = points[triangles[:, 1]] - points[triangles[:, 0]]  # Vector from p0 to p1
+    v2 = points[triangles[:, 2]] - points[triangles[:, 0]]  # Vector from p0 to p2
+    # Compute normal vector for each plane
+    normal = np.cross(v1, v2)
+    # Define North  and East directions
+    north = np.array([0, 1, 0])
+    east = np.array([1, 0, 0])
+    # Make dot product
+    dot_n = np.dot(normal, north)
+    dot_e = np.dot(normal, east)
+    # Aspect in radians
+    aspect = np.atan2(dot_e, dot_n)
+    aspect = (aspect + np.pi*2) % (2 * np.pi)
+
+    return np.degrees(aspect)

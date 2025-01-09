@@ -4,9 +4,14 @@ by Giovanni Montefoschi
 '''
 import numpy as np
 import rasterio
+import fiona
+from fiona.crs import from_epsg
+from shapely.geometry import Polygon
 from scipy.spatial import Delaunay
 from .vip_selection import vip_selection
+from .utils import aspect, slope
 import plotly.graph_objects as go
+
 
 class TIN:
     """
@@ -25,6 +30,8 @@ class TIN:
         self.points = None
         self.triangles = None
         self.edges = None
+        self.slope = None
+        self.aspect = None
         self.load_raster()
 
     def load_raster(self):
@@ -142,3 +149,70 @@ class TIN:
         )
 
         return fig
+
+    def get_slope(self):
+        if self.triangles is None:
+            print('No triangles have been generated yet!')
+            return None
+        if self.points is None:
+            print('No points have been generated yet!')
+            return None
+        self.slope = slope(self.points, self.triangles)
+        return self.slope
+
+    def get_aspect(self):
+        if self.triangles is None:
+            print('No triangles have been generated yet!')
+            return None
+        if self.points is None:
+            print('No points have been generated yet!')
+            return None
+        self.aspect = aspect(self.points, self.triangles)
+        return self.aspect
+
+    def to_file(self, filepath, driver='GPKG'):
+        """
+        Writes the TIN triangles to a shapefile or GeoPackage with slope and aspect as attributes if present.
+
+        Parameters:
+        - filepath: str, path to the output file.
+        - driver: str, output file format driver (e.g., "GPKG" or "ESRI Shapefile").
+        """
+
+        props = {}
+
+        if self.slope is not None:
+            props['slope'] = 'float'
+        if self.aspect is not None:
+            props['aspect'] = 'float'
+
+        schema = {
+            'geometry': 'Polygon',
+            'properties': props
+        }
+
+        crs_string = self.metadata["crs"].to_string()
+        epsg_code = int(crs_string.split(":")[1])  # Extract the EPSG code from the CRS string
+        crs = from_epsg(epsg_code)
+
+        with fiona.open(filepath, mode='w', driver=driver, crs=crs, schema=schema) as layer:
+            for i, triangle in enumerate(self.triangles):
+                vertices = self.points[triangle]
+                polygon = Polygon(vertices[:, :2])
+                if not polygon.is_valid:
+                    continue  # Skip invalid polygons
+
+                properties = {}
+                if self.slope is not None:
+                    properties['slope'] = float(self.slope[i])
+                if self.aspect is not None:
+                    properties['aspect'] = float(self.aspect[i])
+
+                # Write geometry and properties if they exist
+                layer.write({
+                    'geometry': {
+                        'type': 'Polygon',
+                        'coordinates': [list(polygon.exterior.coords)]
+                    },
+                    'properties': properties
+                })

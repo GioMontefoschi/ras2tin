@@ -4,10 +4,10 @@ This is a University project!
 
 ## Setting Up the Environment
 
-To recreate the conda environment used for this project, follow the steps below:
+To recreate the pip environment used for this project, follow the steps below:
 
 ### Prerequisites
-Make sure you have [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) installed on your system.
+Make sure you have pip installed on your system.
 
 ### How to install for developement
 

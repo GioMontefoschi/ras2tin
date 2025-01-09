@@ -1,0 +1,8 @@
+LICENSE
+README.md
+setup.py
+ras2tin/ras2tin.egg-info/PKG-INFO
+ras2tin/ras2tin.egg-info/SOURCES.txt
+ras2tin/ras2tin.egg-info/dependency_links.txt
+ras2tin/ras2tin.egg-info/requires.txt
+ras2tin/ras2tin.egg-info/top_level.txt

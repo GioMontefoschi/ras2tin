@@ -3,3 +3,4 @@ __pycache__/
 venv/
 demo/
 build/
+ras2tin.egg-info/

@@ -7,3 +7,4 @@ ras2tin.egg-info/
 venv/
 *.egg-info
 dist/
+tests/*.gpkg

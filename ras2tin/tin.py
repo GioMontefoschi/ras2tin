@@ -8,6 +8,7 @@ import fiona
 from fiona.crs import from_epsg
 from shapely.geometry import Polygon
 from scipy.spatial import Delaunay
+from scipy.interpolate import LinearNDInterpolator
 from .vip_selection import vip_selection
 from .utils import aspect, slope
 import plotly.graph_objects as go
@@ -45,7 +46,7 @@ class TIN:
         except Exception as e:
             print(f"Error loading raster: {e}")
 
-    def generate_points(self, ratio=0.1):
+    def generate_points(self, ratio=0.04, n_cells=64):
         """
         Select a set of important points (VIPs) from the elevation data.
 
@@ -54,7 +55,7 @@ class TIN:
         """
         if self.elevation_data is None:
             raise ValueError("Elevation data not loaded.")
-        self.points = vip_selection(elevation_data=self.elevation_data, metadata=self.metadata, ratio=ratio)
+        self.points = vip_selection(elevation_data=self.elevation_data, metadata=self.metadata, ratio=ratio, n_cells=n_cells)
 
     def generate_tin(self):
         """
@@ -65,21 +66,21 @@ class TIN:
         delaunay_tri = Delaunay(self.points[:, :2])
         self.triangles = delaunay_tri.simplices
 
-    def get_triangles(self):
+    def error_map(self):
         """
-        Return list of triangles of the TIN
+        A function to assess the error of the TIN wrt the original raster data
         """
-        if self.triangles is None:
-            self.triangles = self.generate_tin()
-        return self.triangles
+        # Set up the interpolator
+        interpolator = LinearNDInterpolator(Delaunay(self.points[:, :2]), self.points[:, -1])
+        # Convert the selected points to a list of coordinates and heights
+        height, width = self.elevation_data.shape
+        cols, rows = np.meshgrid(np.arange(width), np.arange(height))
+        xcoords, ycoords = rasterio.transform.xy(self.metadata['transform'], rows, cols)
+        Z = interpolator(xcoords, ycoords)
+        Z_interpolated = np.array(Z).reshape(self.elevation_data.shape)
+        error = Z_interpolated - self.elevation_data
 
-    def get_points(self):
-        """
-        Return list of points in the tin (vertex)
-        """
-        if self.points is None:
-            self.points = self.generate_points()
-        return self.points
+        return error
 
     def plot(self, **kwargs):
         '''

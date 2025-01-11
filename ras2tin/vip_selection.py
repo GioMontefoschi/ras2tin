@@ -5,42 +5,78 @@ import numpy as np
 import rasterio
 from .utils import pad_array, conv2d
 
-laplacian = np.array([
-    [-1, -1, -1],
-    [-1, 8, -1],
-    [-1, -1, -1]
-])
+def vip_selection(elevation_data, metadata, ratio, n_cells):
+    # Ensure n_cells is even
+    if n_cells % 2 != 0:
+        raise ValueError("n_cells must be an even number.")
 
-def vip_selection(elevation_data, metadata, ratio):
-    data = pad_array(elevation_data) #Add padding
+    laplacian = np.array([
+        [-1, -1, -1],
+        [-1, 8, -1],
+        [-1, -1, -1]
+    ])
+
+    data = pad_array(elevation_data)  # Add padding
     significance = conv2d(data, laplacian)
     data = data[1:-1, 1:-1]
 
     tot_points = data.size
-    #Limit is the number of points to keep in order to construct the tin
-    limit = int(0.5*tot_points*ratio)
-    #First get index of the tails of the histogram
-    flat_arr = significance.flatten()
-    largest_indices = np.argsort(flat_arr)[-limit:]
-    smallest_indices = np.argsort(flat_arr)[:limit]
-    #Then create a boolean mask of the selected points
+    limit = int(0.5 * tot_points * ratio)
+
+    # Divide the limit equally among the cells
+    points_per_cell = limit // n_cells
+
+    height, width = data.shape
+    # Determine grid dimensions (n_cells total cells)
+    grid_rows = int(np.sqrt(n_cells))
+    grid_cols = n_cells // grid_rows
+    cell_height = height // grid_rows
+    cell_width = width // grid_cols
+
     vip = np.zeros_like(data, dtype=bool)
-    vip.ravel()[largest_indices] = True
-    vip.ravel()[smallest_indices] = True
-    #Now just convert these points to a list of coordinates and heights
-    height, width = vip.shape #Find the height and width of the array
+
+    for i in range(grid_rows):
+        for j in range(grid_cols):
+            # Define the bounds of the current cell
+            row_start, row_end = i * cell_height, (i + 1) * cell_height
+            col_start, col_end = j * cell_width, (j + 1) * cell_width
+
+            # Handle edge cases for last cell rows/columns
+            if i == grid_rows - 1:
+                row_end = height
+            if j == grid_cols - 1:
+                col_end = width
+
+            # Extract the cell data and significance values
+            cell_data = data[row_start:row_end, col_start:col_end]
+            cell_significance = significance[row_start:row_end, col_start:col_end]
+
+            # Flatten the significance array for sorting
+            flat_arr = cell_significance.flatten()
+
+            # Select points with the highest and lowest significance
+            largest_indices = np.argsort(flat_arr)[-points_per_cell:]
+            smallest_indices = np.argsort(flat_arr)[:points_per_cell]
+
+            # Create a boolean mask for the selected points in the cell
+            cell_vip = np.zeros_like(cell_data, dtype=bool)
+            cell_vip.ravel()[largest_indices] = True
+            cell_vip.ravel()[smallest_indices] = True
+
+            # Update the global VIP mask
+            vip[row_start:row_end, col_start:col_end] = cell_vip
+
+    # Convert the selected points to a list of coordinates and heights
+    height, width = vip.shape
     cols, rows = np.meshgrid(np.arange(width), np.arange(height))
     xs, ys = rasterio.transform.xy(metadata['transform'], rows, cols)
-    xcoords = np.array(xs)
-    xcoords = xcoords.reshape(vip.shape)
-    ycoords = np.array(ys)
-    ycoords = ycoords.reshape(vip.shape)
+    xcoords = np.array(xs).reshape(vip.shape)
+    ycoords = np.array(ys).reshape(vip.shape)
 
-    xindex, yindex = np.where(vip==True) #Find index of all true values in vip
+    xindex, yindex = np.where(vip)
     vip_points = []
     for x, y in zip(xindex, yindex):
         vip_points.append([xcoords[x, y], ycoords[x, y], data[x, y]])
-    vip_points = np.array(vip_points)
-    #print(vip_points)
-    return vip_points
 
+    vip_points = np.array(vip_points)
+    return vip_points

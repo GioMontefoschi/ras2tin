@@ -1,14 +1,16 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="ras2tin",  # Name of your package
-    version="0.1",  # Version number
-    packages=find_packages(),  # This will include the ras2tin directory and its submodules
+    name="ras2tin",
+    version="0.1",
+    packages=find_packages(),
     install_requires=[
         'numpy',
         'rasterio',
         'scipy',
-        'plotly'
+        'plotly',
+        'fiona',
+        'shapely'
     ],
     description="A simple library to convert and display TINs from a DEM",
     long_description=open('README.md').read(),

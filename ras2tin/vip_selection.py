@@ -1,11 +1,22 @@
-"""
-VIP Selection algorithm. Implementing "Systematic selection of very important points (VIP) from digital terrain model for constructing triangular irregular network", Zhimin Chen, 1987
-"""
 import numpy as np
 import rasterio
 from .utils import pad_array, conv2d
 
+
 def vip_selection(elevation_data, metadata, ratio, n_cells):
+    """
+    VIP Selection algorithm. Implementing "Systematic selection of very important points (VIP) from digital terrain model for constructing triangular irregular network", Zhimin Chen, 1987
+
+    Parameters:
+    raster (np.ndarray): 2D array representing the raster data.
+    metadata (dict): Metadata dictionary containing 'transform' and 'crs'.
+    ratio (float): Ratio of VIPs to total raster cells.
+    n_cells (int): Number of cells to divide the raster into for block-wise VIP selection.
+
+    Returns:
+    np.ndarray: Array of VIP points with coordinates and values (x, y, z).
+    """
+
     # Ensure n_cells is even
     if n_cells % 2 != 0:
         raise ValueError("n_cells must be an even number.")

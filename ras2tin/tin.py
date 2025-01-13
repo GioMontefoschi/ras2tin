@@ -16,7 +16,7 @@ import plotly.graph_objects as go
 
 class TIN:
     """
-    A class to represent a Triangulated Irregular Network (TIN) generated from a raster file.
+    Class for constructing and managing a Triangulated Irregular Network (TIN) from raster data.
     """
 
     def __init__(self, raster_path):
@@ -48,10 +48,11 @@ class TIN:
 
     def generate_points(self, ratio=0.04, n_cells=64):
         """
-        Select a set of important points (VIPs) from the elevation data.
+        Generate VIPs (Very Important Points) for TIN creation.
 
-        Returns:
-        numpy.ndarray: Array of points with shape (n, 3).
+        Parameters:
+        ratio (float): Ratio of VIPs to total points.
+        n_cells (int): Number of cells for block-wise VIP selection.
         """
         if self.elevation_data is None:
             raise ValueError("Elevation data not loaded.")
@@ -59,7 +60,7 @@ class TIN:
 
     def generate_tin(self):
         """
-        Generate a TIN using scipy's Delaunay class for convenience
+        Generate the TIN (triangles) from the VIPs.
         """
         if self.points is None:
             self.points = self.generate_points()
@@ -68,7 +69,10 @@ class TIN:
 
     def error_map(self):
         """
-        A function to assess the error of the TIN wrt the original raster data
+        Calculate the error map comparing TIN with the original raster.
+
+        Returns:
+        np.ndarray: Error values for each raster cell.
         """
         # Set up the interpolator
         interpolator = LinearNDInterpolator(Delaunay(self.points[:, :2]), self.points[:, -1])
@@ -84,7 +88,10 @@ class TIN:
 
     def plot(self, **kwargs):
         '''
-        Convenience function to plot using the plotly library
+        Generate a 3D visualization of the TIN.
+
+        Returns:
+        plotly.graph_objs.Figure: A 3D plot of the TIN.
         '''
         if self.triangles is None:
             self.triangles = self.generate_tin()
@@ -152,6 +159,9 @@ class TIN:
         return fig
 
     def get_slope(self):
+        """
+        Calculate slopes for the TIN triangles.
+        """
         if self.triangles is None:
             print('No triangles have been generated yet!')
             return None
@@ -162,6 +172,9 @@ class TIN:
         return self.slope
 
     def get_aspect(self):
+        """
+        Calculate aspects for the TIN triangles.
+        """
         if self.triangles is None:
             print('No triangles have been generated yet!')
             return None
@@ -176,8 +189,8 @@ class TIN:
         Writes the TIN triangles to a shapefile or GeoPackage with slope and aspect as attributes if present.
 
         Parameters:
-        - filepath: str, path to the output file.
-        - driver: str, output file format driver (e.g., "GPKG" or "ESRI Shapefile").
+        filepath: str, path to the output file.
+        driver: str, output file format driver (e.g., "GPKG" or "ESRI Shapefile").
         """
 
         props = {}
